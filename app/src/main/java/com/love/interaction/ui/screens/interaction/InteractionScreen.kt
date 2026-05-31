@@ -35,6 +35,9 @@ fun InteractionScreen(viewModel: InteractionViewModel = viewModel()) {
     var missYouReason by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<com.love.interaction.data.local.CachedInteraction?>(null) }
 
+    LaunchedEffect(Unit) { viewModel.startAutoRefresh() }
+    DisposableEffect(Unit) { onDispose { viewModel.stopAutoRefresh() } }
+
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item {
@@ -84,7 +87,7 @@ fun InteractionScreen(viewModel: InteractionViewModel = viewModel()) {
                             }
                         }
                     }
-                    // "Miss you" button 閳?opens reason dialog
+                    // "Miss you" button 闁?opens reason dialog
                     Button(
                         onClick = { showMissYouDialog = true },
                         modifier = Modifier.fillMaxWidth().height(72.dp),

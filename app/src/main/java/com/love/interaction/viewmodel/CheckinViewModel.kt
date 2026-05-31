@@ -11,9 +11,12 @@ import com.love.interaction.data.repository.CheckinRepository
 import com.love.interaction.data.repository.CoinRepository
 import com.love.interaction.data.repository.SessionManager
 import com.love.interaction.util.AppConfig
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 data class CheckinUiState(
@@ -39,6 +42,8 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableStateFlow(CheckinUiState())
     val uiState: StateFlow<CheckinUiState> = _uiState.asStateFlow()
 
+    private var autoRefreshJob: Job? = null
+
     init {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
@@ -47,14 +52,28 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         refreshCheckins()
-        viewModelScope.launch {
-            RealtimeManager.refreshEvents.collect { refreshCheckins() }
+    }
+
+    /** Start periodic polling. Call from LaunchedEffect when screen is visible. */
+    fun startAutoRefresh() {
+        if (autoRefreshJob != null) return
+        autoRefreshJob = viewModelScope.launch {
+            while (isActive) {
+                delay(5000)
+                refreshCheckins()
+            }
         }
+    }
+
+    fun stopAutoRefresh() {
+        autoRefreshJob?.cancel()
+        autoRefreshJob = null
     }
 
     fun refreshCheckins() {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
+            if (session.spaceId.isEmpty()) return@launch
             _uiState.value = _uiState.value.copy(isLoading = true)
             val result = checkinRepository.refreshCheckins(session.spaceId)
             result.onSuccess {
@@ -79,7 +98,6 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
             )
             result.onSuccess {
                 coinRepository.earn(session.spaceId, session.userId, "\u62A5\u5907", AppConfig.COIN_CHECKIN_REWARD.toLong())
-                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     successMessage = "\u62A5\u5907\u6210\u529F +${AppConfig.COIN_CHECKIN_REWARD}\u91D1\u5E01"
@@ -93,7 +111,6 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
     fun deleteCheckin(id: String) {
         viewModelScope.launch {
             checkinRepository.deleteCheckin(id).onSuccess {
-                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(successMessage = "\u5DF2\u5220\u9664")
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(error = e.message)

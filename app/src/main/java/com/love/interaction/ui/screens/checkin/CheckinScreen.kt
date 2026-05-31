@@ -27,6 +27,9 @@ fun CheckinScreen(viewModel: CheckinViewModel = viewModel()) {
     var customContent by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<CachedCheckin?>(null) }
 
+    LaunchedEffect(Unit) { viewModel.startAutoRefresh() }
+    DisposableEffect(Unit) { onDispose { viewModel.stopAutoRefresh() } }
+
     Scaffold(topBar = {
         TopAppBar(title = {
             Row(verticalAlignment = Alignment.CenterVertically) {

@@ -1,0 +1,81 @@
+﻿
+> Configure project :app
+WARNING: The option setting 'android.overridePathCheck=true' is experimental.
+The current default is 'false'.
+
+> Task :app:clean
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig FROM-CACHE
+> Task :app:generateDebugResValues FROM-CACHE
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources FROM-CACHE
+> Task :app:mergeDebugResources FROM-CACHE
+> Task :app:packageDebugResources FROM-CACHE
+> Task :app:parseDebugLocalResources FROM-CACHE
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug FROM-CACHE
+> Task :app:processDebugMainManifest FROM-CACHE
+> Task :app:processDebugManifest FROM-CACHE
+> Task :app:processDebugManifestForPackage FROM-CACHE
+> Task :app:processDebugResources FROM-CACHE
+> Task :app:javaPreCompileDebug FROM-CACHE
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets FROM-CACHE
+> Task :app:desugarDebugFileDependencies FROM-CACHE
+> Task :app:mergeDebugJniLibFolders
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugNativeLibs
+> Task :app:mergeExtDexDebug FROM-CACHE
+> Task :app:mergeLibDexDebug FROM-CACHE
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:kspDebugKotlin
+gradlew.bat : e: file:///D:/projects/情侣互动/app/src/main/java/com/love/interaction/viewmodel/DiaryViewModel.kt:94:37 Expe
+cting '"'
+At line:2 char:147
++ ...  "D:\projects\情侣互动"; & .\gradlew.bat clean assembleDebug 2>&1 | Out-F ...
++                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (e: file:///D:/p...7 Expecting '"':String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+e: file:///D:/projects/情侣互动/app/src/main/java/com/love/interaction/viewmodel/DiaryViewModel.kt:95:28 Expecting an eleme
+nt
+e: file:///D:/projects/情侣互动/app/src/main/java/com/love/interaction/viewmodel/DiaryViewModel.kt:95:39 Expecting an eleme
+nt
+e: file:///D:/projects/情侣互动/app/src/main/java/com/love/interaction/viewmodel/DiaryViewModel.kt:95:57 Expecting an eleme
+nt
+e: file:///D:/projects/情侣互动/app/src/main/java/com/love/interaction/viewmodel/DiaryViewModel.kt:95:65 Expecting an expre
+ssion
+e: file:///D:/projects/情侣互动/app/src/main/java/com/love/interaction/viewmodel/DiaryViewModel.kt:163:81 Expecting '"'
+e: file:///D:/projects/情侣互动/app/src/main/java/com/love/interaction/viewmodel/DiaryViewModel.kt:163:81 Expecting ')'
+
+> Task :app:kspDebugKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:kspDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCo
+mpilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 6s
+30 actionable tasks: 14 executed, 16 from cache

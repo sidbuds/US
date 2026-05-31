@@ -8,9 +8,12 @@ import com.love.interaction.data.local.CachedInteraction
 import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.InteractionRepository
 import com.love.interaction.data.repository.SessionManager
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 data class InteractionUiState(
@@ -35,6 +38,8 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
     private val _uiState = MutableStateFlow(InteractionUiState())
     val uiState: StateFlow<InteractionUiState> = _uiState.asStateFlow()
 
+    private var autoRefreshJob: Job? = null
+
     init {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
@@ -45,9 +50,21 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
             }
         }
         refresh()
-        viewModelScope.launch {
-            RealtimeManager.refreshEvents.collect { refresh() }
+    }
+
+    fun startAutoRefresh() {
+        if (autoRefreshJob != null) return
+        autoRefreshJob = viewModelScope.launch {
+            while (isActive) {
+                delay(5000)
+                refresh()
+            }
         }
+    }
+
+    fun stopAutoRefresh() {
+        autoRefreshJob?.cancel()
+        autoRefreshJob = null
     }
 
     fun refresh() {
@@ -78,7 +95,6 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
             )
             result.onSuccess {
                 val label = when (type) { "hug" -> "\u62B1\u62B1"; "kiss" -> "\u4EB2\u4EB2"; "miss" -> "\u60F3\u4F60"; else -> type }
-                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false, showAnimation = true, animationType = type,
                     successMessage = "\u5DF2\u53D1\u9001$label\uFF01"
@@ -92,7 +108,6 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
     fun deleteInteraction(id: String) {
         viewModelScope.launch {
             interactionRepository.deleteInteraction(id).onSuccess {
-                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(successMessage = "\u5DF2\u5220\u9664")
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(error = e.message)

@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.CachedExpense
 import com.love.interaction.data.model.ExpenseCategory
-import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.CoinRepository
 import com.love.interaction.data.repository.ExpenseRepository
 import com.love.interaction.data.repository.SessionManager
@@ -14,6 +13,9 @@ import com.love.interaction.util.AppConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 data class ExpenseUiState(
@@ -58,12 +60,6 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
         refreshExpenses()
 
-        // Auto-refresh on realtime events
-        viewModelScope.launch {
-            RealtimeManager.refreshEvents.collect {
-                refreshExpenses()
-            }
-        }
     }
 
     fun refreshExpenses() {
@@ -114,6 +110,17 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
+
+    private var autoRefreshJob: Job? = null
+
+    fun startAutoRefresh() {
+        if (autoRefreshJob != null) return
+        autoRefreshJob = viewModelScope.launch {
+            while (isActive) { delay(5000); refreshExpenses() }
+        }
+    }
+
+    fun stopAutoRefresh() { autoRefreshJob?.cancel(); autoRefreshJob = null }
 
     fun clearError() { _uiState.value = _uiState.value.copy(error = null) }
     fun clearSuccess() { _uiState.value = _uiState.value.copy(successMessage = null) }
