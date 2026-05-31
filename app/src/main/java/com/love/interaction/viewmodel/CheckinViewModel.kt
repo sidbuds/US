@@ -47,12 +47,8 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         refreshCheckins()
-
-        // Auto-refresh on realtime events from PocketBase
         viewModelScope.launch {
-            RealtimeManager.refreshEvents.collect {
-                refreshCheckins()
-            }
+            RealtimeManager.refreshEvents.collect { refreshCheckins() }
         }
     }
 
@@ -64,10 +60,7 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
             result.onSuccess {
                 _uiState.value = _uiState.value.copy(isLoading = false)
             }.onFailure { e ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
     }
@@ -79,33 +72,20 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = _uiState.value.copy(error = "\u8BF7\u9000\u51FA\u91CD\u65B0\u9009\u62E9\u8EAB\u4EFD")
                 return@launch
             }
-            if (session.spaceId.isEmpty()) {
-                _uiState.value = _uiState.value.copy(error = "\u8BF7\u5148\u7ED1\u5B9A\u60C5\u4FA3\u7A7A\u95F4")
-                return@launch
-            }
             _uiState.value = _uiState.value.copy(isLoading = true)
             val result = checkinRepository.createCheckin(
-                spaceId = session.spaceId,
-                userId = session.userId,
-                type = type,
-                customContent = customContent
+                spaceId = session.spaceId, userId = session.userId,
+                type = type, customContent = customContent
             )
             result.onSuccess {
-                coinRepository.earn(
-                    spaceId = session.spaceId,
-                    userId = session.userId,
-                    reason = "\u62A5\u5907",
-                    amount = AppConfig.COIN_CHECKIN_REWARD.toLong()
-                )
+                coinRepository.earn(session.spaceId, session.userId, "\u62A5\u5907", AppConfig.COIN_CHECKIN_REWARD.toLong())
+                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     successMessage = "\u62A5\u5907\u6210\u529F +${AppConfig.COIN_CHECKIN_REWARD}\u91D1\u5E01"
                 )
             }.onFailure { e ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
     }
@@ -113,6 +93,7 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
     fun deleteCheckin(id: String) {
         viewModelScope.launch {
             checkinRepository.deleteCheckin(id).onSuccess {
+                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(successMessage = "\u5DF2\u5220\u9664")
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(error = e.message)

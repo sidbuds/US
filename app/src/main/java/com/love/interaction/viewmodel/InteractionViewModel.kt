@@ -45,12 +45,8 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
             }
         }
         refresh()
-
-        // Auto-refresh on realtime events from PocketBase
         viewModelScope.launch {
-            RealtimeManager.refreshEvents.collect {
-                refresh()
-            }
+            RealtimeManager.refreshEvents.collect { refresh() }
         }
     }
 
@@ -77,17 +73,14 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
             }
             _uiState.value = _uiState.value.copy(isLoading = true)
             val result = interactionRepository.sendInteraction(
-                spaceId = session.spaceId,
-                fromUserId = session.userId,
-                toUserId = session.partnerId,
-                type = type
+                spaceId = session.spaceId, fromUserId = session.userId,
+                toUserId = session.partnerId, type = type
             )
             result.onSuccess {
                 val label = when (type) { "hug" -> "\u62B1\u62B1"; "kiss" -> "\u4EB2\u4EB2"; "miss" -> "\u60F3\u4F60"; else -> type }
+                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    showAnimation = true,
-                    animationType = type,
+                    isLoading = false, showAnimation = true, animationType = type,
                     successMessage = "\u5DF2\u53D1\u9001$label\uFF01"
                 )
             }.onFailure { e ->
@@ -99,6 +92,7 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
     fun deleteInteraction(id: String) {
         viewModelScope.launch {
             interactionRepository.deleteInteraction(id).onSuccess {
+                RealtimeManager.notifyDataChanged()
                 _uiState.value = _uiState.value.copy(successMessage = "\u5DF2\u5220\u9664")
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(error = e.message)
