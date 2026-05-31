@@ -1,0 +1,12 @@
+[
+  {
+    "name": "test_collection",
+    "type": "base",
+    "fields": [
+      {
+        "name": "title",
+        "type": "text"
+      }
+    ]
+  }
+]

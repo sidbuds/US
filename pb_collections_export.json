@@ -1,0 +1,331 @@
+﻿[
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "code",
+                           "options":  {
+                                           "max":  6
+                                       },
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "user_a_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "user_b_id",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "status",
+                           "options":  {
+                                           "values":  [
+                                                          "active",
+                                                          "disabled"
+                                                      ]
+                                       },
+                           "type":  "text",
+                           "required":  true
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "couple_spaces",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    },
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "space_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "user_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "type",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "custom_content",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "mood",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "location_name",
+                           "type":  "text",
+                           "required":  false
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "checkins",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    },
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "space_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "from_user_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "to_user_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "type",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "reason",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "is_read",
+                           "type":  "bool",
+                           "required":  false
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "interactions",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    },
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "space_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "user_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "category",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "title",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "content",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "images",
+                           "type":  "text",
+                           "required":  false
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "diaries",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    },
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "diary_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "user_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "content",
+                           "type":  "text",
+                           "required":  true
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "diary_comments",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    },
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "space_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "amount",
+                           "type":  "number",
+                           "required":  true
+                       },
+                       {
+                           "name":  "category",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "note",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "paid_by",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "trans_type",
+                           "options":  {
+                                           "values":  [
+                                                          "expense",
+                                                          "income"
+                                                      ]
+                                       },
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "date",
+                           "type":  "text",
+                           "required":  true
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "expenses",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    },
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "space_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "user_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "name",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "status",
+                           "options":  {
+                                           "values":  [
+                                                          "active",
+                                                          "completed"
+                                                      ]
+                                       },
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "fulfill_description",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "fulfill_images",
+                           "type":  "text",
+                           "required":  false
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "wishlist",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    },
+    {
+        "createRule":  "",
+        "schema":  [
+                       {
+                           "name":  "space_id",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "user_id",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "title",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "date",
+                           "type":  "text",
+                           "required":  true
+                       },
+                       {
+                           "name":  "emoji",
+                           "type":  "text",
+                           "required":  false
+                       },
+                       {
+                           "name":  "show_on_home",
+                           "type":  "bool",
+                           "required":  false
+                       }
+                   ],
+        "listRule":  "",
+        "type":  "base",
+        "name":  "countdowns",
+        "deleteRule":  "",
+        "viewRule":  "",
+        "updateRule":  ""
+    }
+]

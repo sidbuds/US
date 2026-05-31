@@ -1,0 +1,161 @@
+[
+  {
+    "name": "couple_spaces",
+    "type": "base",
+    "fields": [
+      {"name":"code","type":"text","system":false,"required":true,"unique":false,"options":{"min":1,"max":6}},
+      {"name":"user_a_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"user_b_id","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"status","type":"text","system":false,"required":true,"unique":false,"options":{"values":["active","disabled"]}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}},
+      {"name":"updated","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "name": "checkins",
+    "type": "base",
+    "fields": [
+      {"name":"space_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"user_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"type","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"custom_content","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"mood","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"location_name","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "name": "interactions",
+    "type": "base",
+    "fields": [
+      {"name":"space_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"from_user_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"to_user_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"type","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"reason","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"is_read","type":"bool","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "name": "diaries",
+    "type": "base",
+    "fields": [
+      {"name":"space_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"user_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"category","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"title","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"content","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"images","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}},
+      {"name":"updated","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "name": "diary_comments",
+    "type": "base",
+    "fields": [
+      {"name":"diary_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"user_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"content","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "name": "expenses",
+    "type": "base",
+    "fields": [
+      {"name":"space_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"amount","type":"number","system":false,"required":true,"unique":false,"options":{"min":0}},
+      {"name":"category","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"note","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"paid_by","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"trans_type","type":"text","system":false,"required":false,"unique":false,"options":{"values":["expense","income"]}},
+      {"name":"date","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "name": "wishlist",
+    "type": "base",
+    "fields": [
+      {"name":"space_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"user_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"name","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"status","type":"text","system":false,"required":false,"unique":false,"options":{"values":["active","completed"]}},
+      {"name":"fulfill_description","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"fulfill_images","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}},
+      {"name":"updated","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "name": "countdowns",
+    "type": "base",
+    "fields": [
+      {"name":"space_id","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"user_id","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"title","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"date","type":"text","system":false,"required":true,"unique":false,"options":{}},
+      {"name":"emoji","type":"text","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"show_on_home","type":"bool","system":false,"required":false,"unique":false,"options":{}},
+      {"name":"created","type":"autodate","system":false,"required":false,"unique":false,"options":{"autoNow":true}}
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  }
+]

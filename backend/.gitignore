@@ -1,0 +1,10 @@
+﻿# PocketBase 运行时数据
+data/
+!data/.gitkeep
+
+# PocketBase 可执行文件 (太大不入版本控制)
+pocketbase
+pocketbase.exe
+
+# 日志
+*.log
