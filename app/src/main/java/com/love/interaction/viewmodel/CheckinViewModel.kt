@@ -1,4 +1,4 @@
-﻿package com.love.interaction.viewmodel
+package com.love.interaction.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.CachedCheckin
 import com.love.interaction.data.model.CheckinType
+import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.CheckinRepository
 import com.love.interaction.data.repository.CoinRepository
 import com.love.interaction.data.repository.SessionManager
@@ -41,12 +42,18 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
     init {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
-            // Observe local cached checkins
             checkinRepository.getCheckins(session.spaceId).collect { cached ->
                 _uiState.value = _uiState.value.copy(checkins = cached)
             }
         }
         refreshCheckins()
+
+        // Auto-refresh on realtime events from PocketBase
+        viewModelScope.launch {
+            RealtimeManager.refreshEvents.collect {
+                refreshCheckins()
+            }
+        }
     }
 
     fun refreshCheckins() {
@@ -69,11 +76,11 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
             if (session.spaceId.isEmpty() || session.spaceId == "couple_main") {
-                _uiState.value = _uiState.value.copy(error = "请退出重新选择身份")
+                _uiState.value = _uiState.value.copy(error = "\u8BF7\u9000\u51FA\u91CD\u65B0\u9009\u62E9\u8EAB\u4EFD")
                 return@launch
             }
             if (session.spaceId.isEmpty()) {
-                _uiState.value = _uiState.value.copy(error = "请先绑定情侣空间")
+                _uiState.value = _uiState.value.copy(error = "\u8BF7\u5148\u7ED1\u5B9A\u60C5\u4FA3\u7A7A\u95F4")
                 return@launch
             }
             _uiState.value = _uiState.value.copy(isLoading = true)
@@ -84,16 +91,15 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
                 customContent = customContent
             )
             result.onSuccess {
-                // Award coins
                 coinRepository.earn(
                     spaceId = session.spaceId,
                     userId = session.userId,
-                    reason = "报备",
+                    reason = "\u62A5\u5907",
                     amount = AppConfig.COIN_CHECKIN_REWARD.toLong()
                 )
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    successMessage = "报备成功 +${AppConfig.COIN_CHECKIN_REWARD}金币"
+                    successMessage = "\u62A5\u5907\u6210\u529F +${AppConfig.COIN_CHECKIN_REWARD}\u91D1\u5E01"
                 )
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(
@@ -104,11 +110,16 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+    fun deleteCheckin(id: String) {
+        viewModelScope.launch {
+            checkinRepository.deleteCheckin(id).onSuccess {
+                _uiState.value = _uiState.value.copy(successMessage = "\u5DF2\u5220\u9664")
+            }.onFailure { e ->
+                _uiState.value = _uiState.value.copy(error = e.message)
+            }
+        }
     }
 
-    fun clearSuccess() {
-        _uiState.value = _uiState.value.copy(successMessage = null)
-    }
+    fun clearError() { _uiState.value = _uiState.value.copy(error = null) }
+    fun clearSuccess() { _uiState.value = _uiState.value.copy(successMessage = null) }
 }

@@ -1,4 +1,4 @@
-﻿package com.love.interaction.data.local.dao
+package com.love.interaction.data.local.dao
 
 import androidx.room.*
 import com.love.interaction.data.local.CachedCheckin
@@ -25,6 +25,9 @@ interface CheckinDao {
 
     @Query("DELETE FROM cached_checkins WHERE spaceId = :spaceId")
     suspend fun clearForSpace(spaceId: String)
+
+    @Query("DELETE FROM cached_checkins WHERE id = :id")
+    suspend fun deleteById(id: String)
 }
 
 @Dao
@@ -50,6 +53,9 @@ interface InteractionDao {
 
     @Query("DELETE FROM cached_interactions WHERE spaceId = :spaceId")
     suspend fun clearForSpace(spaceId: String)
+
+    @Query("DELETE FROM cached_interactions WHERE id = :id")
+    suspend fun deleteById(id: String)
 }
 
 @Dao
@@ -71,6 +77,9 @@ interface DiaryDao {
 
     @Query("DELETE FROM cached_diaries WHERE spaceId = :spaceId")
     suspend fun clearForSpace(spaceId: String)
+
+    @Query("DELETE FROM cached_diaries WHERE id = :id")
+    suspend fun deleteById(id: String)
 }
 
 @Dao

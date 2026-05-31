@@ -1,4 +1,4 @@
-﻿package com.love.interaction.data.repository
+package com.love.interaction.data.repository
 
 import com.love.interaction.data.local.CachedCheckin
 import com.love.interaction.data.local.dao.CheckinDao
@@ -62,6 +62,20 @@ class CheckinRepository(
                 Result.success(checkin)
             } else {
                 Result.failure(Exception("报备失败 (${response.code()}): ${response.errorBody()?.string() ?: ""}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteCheckin(id: String): Result<Unit> {
+        return try {
+            val response = api.deleteCheckin(id)
+            if (response.isSuccessful) {
+                checkinDao.deleteById(id)
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("删除失败 (${response.code()})"))
             }
         } catch (e: Exception) {
             Result.failure(e)

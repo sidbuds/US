@@ -1,4 +1,4 @@
-﻿package com.love.interaction.viewmodel
+package com.love.interaction.viewmodel
 
 import android.app.Application
 import android.util.Log
@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.UserSession
 import com.love.interaction.data.remote.PocketBaseClient
+import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.AuthRepository
 import com.love.interaction.data.repository.SessionManager
 import kotlinx.coroutines.Dispatchers
@@ -118,6 +119,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 )
             )
             PocketBaseClient.setAuthToken(saved.token)
+            RealtimeManager.connect(saved.token, saved.spaceId)
+            Log.d(TAG, "selectIdentity: RealtimeManager connected")
 
             // 4. Update UI state
             val newState = AuthUiState(

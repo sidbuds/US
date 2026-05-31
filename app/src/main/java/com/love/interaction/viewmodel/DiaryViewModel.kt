@@ -1,4 +1,4 @@
-﻿package com.love.interaction.viewmodel
+package com.love.interaction.viewmodel
 
 import android.app.Application
 import android.net.Uri
@@ -9,6 +9,7 @@ import com.love.interaction.data.local.CachedDiary
 import com.love.interaction.data.local.CachedDiaryComment
 import com.love.interaction.data.model.DiaryCategory
 import com.love.interaction.data.repository.CoinRepository
+import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.DiaryRepository
 import com.love.interaction.data.repository.SessionManager
 import com.love.interaction.util.AppConfig
@@ -47,6 +48,13 @@ class DiaryViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         refreshDiaries()
+
+        // Auto-refresh on realtime events
+        viewModelScope.launch {
+            RealtimeManager.refreshEvents.collect {
+                refreshDiaries()
+            }
+        }
     }
 
     fun refreshDiaries() {

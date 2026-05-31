@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +33,7 @@ fun InteractionScreen(viewModel: InteractionViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     var showMissYouDialog by remember { mutableStateOf(false) }
     var missYouReason by remember { mutableStateOf("") }
+    var deleteTarget by remember { mutableStateOf<com.love.interaction.data.local.CachedInteraction?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -81,7 +84,7 @@ fun InteractionScreen(viewModel: InteractionViewModel = viewModel()) {
                             }
                         }
                     }
-                    // "Miss you" button — opens reason dialog
+                    // "Miss you" button 閳?opens reason dialog
                     Button(
                         onClick = { showMissYouDialog = true },
                         modifier = Modifier.fillMaxWidth().height(72.dp),
@@ -140,12 +143,28 @@ fun InteractionScreen(viewModel: InteractionViewModel = viewModel()) {
                                     Text("\uD83D\uDCCD " + interaction.reason, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
+                            if (isMine) {
+                                IconButton(onClick = { deleteTarget = interaction }, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+                                }
+                            }
                             Text(com.love.interaction.util.TimeUtils.formatCreatedAt(interaction.createdAt), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
+        }
+
+        // Delete confirmation dialog
+        deleteTarget?.let { target ->
+            AlertDialog(
+                onDismissRequest = { deleteTarget = null },
+                title = { Text("\u786E\u8BA4\u5220\u9664") },
+                text = { Text("\u786E\u5B9A\u8981\u5220\u9664\u8FD9\u6761\u4E92\u52A8\u8BB0\u5F55\u5417\uFF1F") },
+                confirmButton = { TextButton(onClick = { viewModel.deleteInteraction(target.id); deleteTarget = null }) { Text("\u5220\u9664", color = MaterialTheme.colorScheme.error) } },
+                dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text("\u53D6\u6D88") } }
+            )
         }
 
         // Miss you dialog with reason

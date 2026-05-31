@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.CachedInteraction
+import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.InteractionRepository
 import com.love.interaction.data.repository.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,22 +35,24 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
     private val _uiState = MutableStateFlow(InteractionUiState())
     val uiState: StateFlow<InteractionUiState> = _uiState.asStateFlow()
 
-
     init {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
             interactionRepository.getInteractions(session.spaceId).collect { cached ->
                 val hugs = cached.count { it.type == "hug" }
                 val kisses = cached.count { it.type == "kiss" }
-
-
                 _uiState.value = _uiState.value.copy(interactions = cached, hugCount = hugs, kissCount = kisses)
             }
         }
         refresh()
+
+        // Auto-refresh on realtime events from PocketBase
+        viewModelScope.launch {
+            RealtimeManager.refreshEvents.collect {
+                refresh()
+            }
+        }
     }
-
-
 
     fun refresh() {
         viewModelScope.launch {
@@ -89,6 +92,16 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
                 )
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
+
+    fun deleteInteraction(id: String) {
+        viewModelScope.launch {
+            interactionRepository.deleteInteraction(id).onSuccess {
+                _uiState.value = _uiState.value.copy(successMessage = "\u5DF2\u5220\u9664")
+            }.onFailure { e ->
+                _uiState.value = _uiState.value.copy(error = e.message)
             }
         }
     }

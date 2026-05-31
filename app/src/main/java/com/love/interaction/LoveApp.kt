@@ -1,9 +1,10 @@
-﻿package com.love.interaction
+package com.love.interaction
 
 import android.app.Application
 import android.util.Log
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.remote.PocketBaseClient
+import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

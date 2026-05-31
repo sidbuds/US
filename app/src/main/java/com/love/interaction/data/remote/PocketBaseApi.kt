@@ -1,4 +1,4 @@
-﻿package com.love.interaction.data.remote
+package com.love.interaction.data.remote
 
 import com.love.interaction.data.model.*
 import okhttp3.MultipartBody
@@ -68,6 +68,9 @@ interface PocketBaseApi {
         @Body body: CheckinCreateRequest
     ): Response<Checkin>
 
+    @DELETE("api/collections/checkins/records/{id}")
+    suspend fun deleteCheckin(@Path("id") id: String): Response<Unit>
+
     // ==================== Interactions ====================
 
     @GET("api/collections/interactions/records")
@@ -88,6 +91,9 @@ interface PocketBaseApi {
         @Path("id") id: String,
         @Body body: Map<String, Boolean>
     ): Response<Interaction>
+
+    @DELETE("api/collections/interactions/records/{id}")
+    suspend fun deleteInteraction(@Path("id") id: String): Response<Unit>
 
     // ==================== Diaries ====================
 

@@ -1,4 +1,4 @@
-﻿package com.love.interaction.data.repository
+package com.love.interaction.data.repository
 
 import com.love.interaction.data.local.CachedInteraction
 import com.love.interaction.data.local.dao.InteractionDao
@@ -79,6 +79,20 @@ class InteractionRepository(
             .toInstant()
             .toString()
         return interactionDao.getTodayCount(spaceId, userId, type, todayStart)
+    }
+
+    suspend fun deleteInteraction(id: String): Result<Unit> {
+        return try {
+            val response = api.deleteInteraction(id)
+            if (response.isSuccessful) {
+                interactionDao.deleteById(id)
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("删除失败 (${response.code()})"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     private fun Interaction.toCached() = CachedInteraction(

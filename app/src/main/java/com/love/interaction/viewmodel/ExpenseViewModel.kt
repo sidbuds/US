@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.CachedExpense
 import com.love.interaction.data.model.ExpenseCategory
+import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.CoinRepository
 import com.love.interaction.data.repository.ExpenseRepository
 import com.love.interaction.data.repository.SessionManager
@@ -56,6 +57,13 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         refreshExpenses()
+
+        // Auto-refresh on realtime events
+        viewModelScope.launch {
+            RealtimeManager.refreshEvents.collect {
+                refreshExpenses()
+            }
+        }
     }
 
     fun refreshExpenses() {
@@ -86,10 +94,10 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 date = date
             )
             result.onSuccess {
-                if (!isIncome) coinRepository.earn(session.spaceId, session.userId, "记账", AppConfig.COIN_EXPENSE_REWARD.toLong())
+                if (!isIncome) coinRepository.earn(session.spaceId, session.userId, "\u8BB0\u8D26", AppConfig.COIN_EXPENSE_REWARD.toLong())
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    successMessage = "记账成功 +${AppConfig.COIN_EXPENSE_REWARD}金币"
+                    successMessage = "\u8BB0\u8D26\u6210\u529F +${AppConfig.COIN_EXPENSE_REWARD}\u91D1\u5E01"
                 )
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
@@ -100,7 +108,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     fun deleteExpense(id: String) {
         viewModelScope.launch {
             expenseRepository.deleteExpense(id).onSuccess {
-                _uiState.value = _uiState.value.copy(successMessage = "已删除")
+                _uiState.value = _uiState.value.copy(successMessage = "\u5DF2\u5220\u9664")
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(error = e.message)
             }
@@ -110,4 +118,3 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     fun clearError() { _uiState.value = _uiState.value.copy(error = null) }
     fun clearSuccess() { _uiState.value = _uiState.value.copy(successMessage = null) }
 }
-
