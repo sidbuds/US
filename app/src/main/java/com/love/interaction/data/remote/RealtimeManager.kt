@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 object RealtimeManager {
     private const val TAG = "RealtimeManager"
-    private const val POLL_INTERVAL_MS = 15_000L
+    private const val POLL_INTERVAL_MS = 3_000L
 
     private val _refreshEvents = MutableSharedFlow<String>(extraBufferCapacity = 10)
     val refreshEvents: SharedFlow<String> = _refreshEvents.asSharedFlow()
