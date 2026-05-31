@@ -5,9 +5,6 @@ import com.love.interaction.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -179,35 +175,6 @@ fun InteractionScreen(viewModel: InteractionViewModel = viewModel()) {
             )
         }
 
-        // GIF popup for incoming interactions
-        if (uiState.showGifPopup && uiState.gifResId != 0) {
-            Dialog(
-                onDismissRequest = { viewModel.dismissGifPopup() },
-                properties = DialogProperties(usePlatformDefaultWidth = false)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize().clickable { viewModel.dismissGifPopup() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            model = uiState.gifResId,
-                            imageLoader = coil.ImageLoader.Builder(LocalContext.current)
-                                .components { add(coil.decode.GifDecoder.Factory()) }
-                                .build()
-                        ),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxWidth(0.85f),
-                        contentScale = ContentScale.Fit
-                    )
-                    LaunchedEffect(uiState.showGifPopup) {
-                        kotlinx.coroutines.delay(4000)
-                        viewModel.dismissGifPopup()
-                    }
-                }
-            }
-        }
-
         // Animation overlay
         AnimatedVisibility(visible = uiState.showAnimation, enter = fadeIn(), exit = fadeOut(), modifier = Modifier.fillMaxSize()) {
             LoveAnimation(type = uiState.animationType, modifier = Modifier.fillMaxSize())
@@ -246,7 +213,6 @@ private fun StatCard(emoji: String, label: String, count: Int, modifier: Modifie
         }
     }
 }
-
 
 
 

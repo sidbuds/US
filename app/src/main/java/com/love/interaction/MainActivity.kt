@@ -8,6 +8,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +28,7 @@ import com.love.interaction.ui.navigation.AppNavGraph
 import com.love.interaction.ui.navigation.Screen
 import com.love.interaction.ui.theme.LoveInteractionTheme
 import com.love.interaction.viewmodel.AuthViewModel
+import com.love.interaction.viewmodel.GlobalPopupViewModel
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -36,6 +42,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             LoveInteractionTheme {
                 val authViewModel: AuthViewModel = viewModel()
+                val globalPopupViewModel: GlobalPopupViewModel = viewModel()
                 val uiState by authViewModel.uiState.collectAsState()
 
                 Log.d(TAG, "RECOMPOSE: isLoading=${uiState.isLoading}, isLoggedIn=${uiState.isLoggedIn}, error=${uiState.error}")
@@ -118,10 +125,43 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             isLoggedIn = uiState.isLoggedIn,
                             authViewModel = authViewModel,
+                            globalPopupViewModel = globalPopupViewModel,
                             heroTitle = heroTitle,
                             heroDays = heroDays,
                             heroEmoji = heroEmoji
                         )
+
+                        // Global GIF popup overlay
+                        val globalPopupState by globalPopupViewModel.state.collectAsState()
+                        Log.d(TAG, "GlobalPopup: show=${globalPopupState.showGifPopup}, gifResId=${globalPopupState.gifResId}")
+                        if (globalPopupState.showGifPopup && globalPopupState.gifResId != 0) {
+                            Log.d(TAG, "Rendering GIF popup Dialog with resId=${globalPopupState.gifResId}")
+                            Dialog(
+                                onDismissRequest = { globalPopupViewModel.dismissGifPopup() },
+                                properties = DialogProperties(usePlatformDefaultWidth = false)
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize().clickable { globalPopupViewModel.dismissGifPopup() },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = coil.compose.rememberAsyncImagePainter(
+                                            model = globalPopupState.gifResId,
+                                            imageLoader = coil.ImageLoader.Builder(LocalContext.current)
+                                                .components { add(coil.decode.GifDecoder.Factory()) }
+                                                .build()
+                                        ),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxWidth(0.85f),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    LaunchedEffect(globalPopupState.showGifPopup) {
+                                        kotlinx.coroutines.delay(4000)
+                                        globalPopupViewModel.dismissGifPopup()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

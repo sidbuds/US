@@ -1,10 +1,8 @@
-﻿package com.love.interaction.viewmodel
+package com.love.interaction.viewmodel
 
 import android.app.Application
-import androidx.annotation.RawRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.love.interaction.R
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.CachedInteraction
 import com.love.interaction.data.repository.InteractionRepository
@@ -21,8 +19,6 @@ data class InteractionUiState(
     val kissCount: Int = 0,
     val showAnimation: Boolean = false,
     val animationType: String = "",
-    @RawRes val gifResId: Int = 0,
-    val showGifPopup: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null
 )
@@ -32,13 +28,12 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
     private val sessionManager = SessionManager(db.sessionDao())
     val currentUserId: String = kotlinx.coroutines.runBlocking { sessionManager.getSession()?.userId ?: "" }
     private val currentLoverId: String = kotlinx.coroutines.runBlocking { sessionManager.getSession()?.email ?: "" }
-    private val isMale: Boolean get() = currentLoverId == "user_longteng"
+    private val isMale: Boolean get() = currentLoverId.contains("longteng")
     private val interactionRepository = InteractionRepository(db.interactionDao())
 
     private val _uiState = MutableStateFlow(InteractionUiState())
     val uiState: StateFlow<InteractionUiState> = _uiState.asStateFlow()
 
-    private var lastInteractionCount = 0
 
     init {
         viewModelScope.launch {
@@ -47,48 +42,14 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
                 val hugs = cached.count { it.type == "hug" }
                 val kisses = cached.count { it.type == "kiss" }
 
-                // Detect new incoming interactions (from partner, not me)
-                if (lastInteractionCount > 0 && cached.size > lastInteractionCount) {
-                    val newOnes = cached.sortedByDescending { it.createdAt }.take(cached.size - lastInteractionCount)
-                    val newIncoming = newOnes.firstOrNull { it.fromUserId != currentUserId }
-                    if (newIncoming != null) {
-                        val gifRes = getGifForInteraction(newIncoming.type, newIncoming.fromUserId)
-                        if (gifRes != 0) {
-                            _uiState.value = _uiState.value.copy(
-                                interactions = cached, hugCount = hugs, kissCount = kisses,
-                                showGifPopup = true, gifResId = gifRes
-                            )
-                            lastInteractionCount = cached.size
-                            return@collect
-                        }
-                    }
-                }
-                lastInteractionCount = cached.size
+
                 _uiState.value = _uiState.value.copy(interactions = cached, hugCount = hugs, kissCount = kisses)
             }
         }
         refresh()
     }
 
-    private fun getGifForInteraction(type: String, fromUserId: String): Int {
-        // Determine sender gender: if I'm male, sender is female, and vice versa
-        val senderIsMale = fromUserId != currentUserId && !isMale || fromUserId == currentUserId && isMale
-        // Actually: if fromUserId != currentUserId, sender is the partner
-        // If I'm male (isMale=true), partner is female, so sender is female
-        // If I'm female (isMale=false), partner is male, so sender is male
-        val partnerIsMale = !isMale
 
-        return when (type) {
-            "hug" -> if (partnerIsMale) R.raw.anim_hug_male_to_female else R.raw.anim_hug_female_to_male
-            "kiss" -> if (partnerIsMale) R.raw.anim_kiss_male_to_female else R.raw.anim_kiss_female_to_male
-            "miss" -> if (partnerIsMale) R.raw.anim_miss_male_to_female else R.raw.anim_miss_female_to_male
-            else -> 0
-        }
-    }
-
-    fun dismissGifPopup() {
-        _uiState.value = _uiState.value.copy(showGifPopup = false, gifResId = 0)
-    }
 
     fun refresh() {
         viewModelScope.launch {

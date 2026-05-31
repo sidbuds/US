@@ -1,4 +1,4 @@
-﻿package com.love.interaction.ui.navigation
+package com.love.interaction.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -21,12 +21,14 @@ import com.love.interaction.ui.screens.more.MoreScreen
 import com.love.interaction.ui.screens.more.CoinHistoryScreen
 import com.love.interaction.ui.screens.more.WishlistScreen
 import com.love.interaction.viewmodel.AuthViewModel
+import com.love.interaction.viewmodel.GlobalPopupViewModel
 
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
     isLoggedIn: Boolean,
     authViewModel: AuthViewModel,
+    globalPopupViewModel: GlobalPopupViewModel,
     heroTitle: MutableState<String>,
     heroDays: MutableState<Int>,
     heroEmoji: MutableState<String>
