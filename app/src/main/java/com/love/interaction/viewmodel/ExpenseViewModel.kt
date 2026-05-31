@@ -1,4 +1,4 @@
-﻿package com.love.interaction.viewmodel
+package com.love.interaction.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -20,6 +20,8 @@ data class ExpenseUiState(
     val expenses: List<CachedExpense> = emptyList(),
     val totalAmount: Double = 0.0,
     val categoryTotals: Map<String, Double> = emptyMap(),
+    val myTotal: Double = 0.0,
+    val partnerTotal: Double = 0.0,
     val error: String? = null,
     val successMessage: String? = null
 )
@@ -42,10 +44,14 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 val total = cached.sumOf { it.amount }
                 val byCategory = cached.groupBy { it.category }
                     .mapValues { (_, list) -> list.sumOf { it.amount } }
+                val myT = cached.filter { it.paidBy == currentUserId }.sumOf { it.amount }
+                val partnerT = total - myT
                 _uiState.value = _uiState.value.copy(
                     expenses = cached,
                     totalAmount = total,
-                    categoryTotals = byCategory
+                    categoryTotals = byCategory,
+                    myTotal = myT,
+                    partnerTotal = partnerT
                 )
             }
         }
