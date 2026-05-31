@@ -1,6 +1,7 @@
 package com.love.interaction.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
@@ -10,11 +11,10 @@ import com.love.interaction.data.repository.CoinRepository
 import com.love.interaction.data.repository.ExpenseRepository
 import com.love.interaction.data.repository.SessionManager
 import com.love.interaction.util.AppConfig
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -30,7 +30,7 @@ data class ExpenseUiState(
 )
 
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
-
+    companion object { private const val TAG = "ExpenseVM" }
     private val db = AppDatabase.getInstance(application)
     private val sessionManager = SessionManager(db.sessionDao())
     val currentUserId: String = kotlinx.coroutines.runBlocking { sessionManager.getSession()?.userId ?: "" }
@@ -45,56 +45,37 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             val session = sessionManager.getSession() ?: return@launch
             expenseRepository.getExpenses(session.spaceId).collect { cached ->
                 val total = cached.sumOf { it.amount }
-                val byCategory = cached.groupBy { it.category }
-                    .mapValues { (_, list) -> list.sumOf { it.amount } }
-                val myT = cached.filter { it.paidBy == currentUserId }.sumOf { it.amount }
-                val partnerT = total - myT
                 _uiState.value = _uiState.value.copy(
                     expenses = cached,
                     totalAmount = total,
-                    categoryTotals = byCategory,
-                    myTotal = myT,
-                    partnerTotal = partnerT
+                    categoryTotals = cached.groupBy { it.category }.mapValues { (_, l) -> l.sumOf { it.amount } },
+                    myTotal = cached.filter { it.paidBy == currentUserId }.sumOf { it.amount },
+                    partnerTotal = total - cached.filter { it.paidBy == currentUserId }.sumOf { it.amount }
                 )
             }
         }
         refreshExpenses()
-
+        viewModelScope.launch {
+            while (isActive) { delay(5000); refreshExpenses() }
+        }
     }
 
     fun refreshExpenses() {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            if (session.spaceId.isEmpty()) return@launch
             expenseRepository.refreshExpenses(session.spaceId)
-            _uiState.value = _uiState.value.copy(isLoading = false)
         }
     }
 
-    fun addExpense(
-        amount: Double,
-        category: ExpenseCategory,
-        note: String,
-        date: String,
-        isIncome: Boolean = false
-    ) {
+    fun addExpense(amount: Double, category: ExpenseCategory, note: String, date: String, isIncome: Boolean = false) {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = expenseRepository.createExpense(
-                spaceId = session.spaceId,
-                amount = amount,
-                category = category,
-                note = note,
-                paidBy = session.userId,
-                date = date
-            )
+            val result = expenseRepository.createExpense(session.spaceId, amount, category, note, session.userId, date)
             result.onSuccess {
                 if (!isIncome) coinRepository.earn(session.spaceId, session.userId, "\u8BB0\u8D26", AppConfig.COIN_EXPENSE_REWARD.toLong())
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    successMessage = "\u8BB0\u8D26\u6210\u529F +${AppConfig.COIN_EXPENSE_REWARD}\u91D1\u5E01"
-                )
+                _uiState.value = _uiState.value.copy(isLoading = false, successMessage = "\u8BB0\u8D26\u6210\u529F +${AppConfig.COIN_EXPENSE_REWARD}\u91D1\u5E01")
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
@@ -110,17 +91,6 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
-
-    private var autoRefreshJob: Job? = null
-
-    fun startAutoRefresh() {
-        if (autoRefreshJob != null) return
-        autoRefreshJob = viewModelScope.launch {
-            while (isActive) { delay(5000); refreshExpenses() }
-        }
-    }
-
-    fun stopAutoRefresh() { autoRefreshJob?.cancel(); autoRefreshJob = null }
 
     fun clearError() { _uiState.value = _uiState.value.copy(error = null) }
     fun clearSuccess() { _uiState.value = _uiState.value.copy(successMessage = null) }

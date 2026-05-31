@@ -27,9 +27,6 @@ fun DiaryScreen(onDiaryClick: (String) -> Unit, onWriteClick: () -> Unit, viewMo
     val currentUserId = viewModel.currentUserId
     var deleteTarget by remember { mutableStateOf<CachedDiary?>(null) }
 
-    LaunchedEffect(Unit) { viewModel.startAutoRefresh() }
-    DisposableEffect(Unit) { onDispose { viewModel.stopAutoRefresh() } }
-
     Scaffold(
         topBar = {
             TopAppBar(title = {

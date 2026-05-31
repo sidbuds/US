@@ -1,12 +1,12 @@
 package com.love.interaction.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.CachedCheckin
 import com.love.interaction.data.model.CheckinType
-import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.CheckinRepository
 import com.love.interaction.data.repository.CoinRepository
 import com.love.interaction.data.repository.SessionManager
@@ -28,9 +28,13 @@ data class CheckinUiState(
 )
 
 class CheckinViewModel(application: Application) : AndroidViewModel(application) {
+    companion object {
+        private const val TAG = "CheckinVM"
+    }
+
     val currentUserId: String = run {
-        val db = com.love.interaction.data.local.AppDatabase.getInstance(application)
-        val sm = com.love.interaction.data.repository.SessionManager(db.sessionDao())
+        val db = AppDatabase.getInstance(application)
+        val sm = SessionManager(db.sessionDao())
         kotlinx.coroutines.runBlocking { sm.getSession()?.userId ?: "" }
     }
 
@@ -42,49 +46,42 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableStateFlow(CheckinUiState())
     val uiState: StateFlow<CheckinUiState> = _uiState.asStateFlow()
 
-    private var autoRefreshJob: Job? = null
-
     init {
+        // Collect Room Flow for instant UI updates
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
+            Log.d(TAG, "Collecting Room Flow for spaceId=${session.spaceId}")
             checkinRepository.getCheckins(session.spaceId).collect { cached ->
+                Log.d(TAG, "Room Flow emitted: ${cached.size} items")
                 _uiState.value = _uiState.value.copy(checkins = cached)
             }
         }
+        // Initial load
         refreshCheckins()
-    }
-
-    /** Start periodic polling. Call from LaunchedEffect when screen is visible. */
-    fun startAutoRefresh() {
-        if (autoRefreshJob != null) return
-        android.util.Log.d("CheckinVM", "startAutoRefresh called")
-        autoRefreshJob = viewModelScope.launch {
+        // Auto-polling in init — guaranteed to run, no LaunchedEffect needed
+        viewModelScope.launch {
+            Log.d(TAG, "Auto-polling started (5s interval)")
             while (isActive) {
                 delay(5000)
-                android.util.Log.d("CheckinVM", "POLL TICK - refreshing")
+                Log.d(TAG, "Poll tick")
                 refreshCheckins()
             }
         }
     }
 
-    fun stopAutoRefresh() {
-        autoRefreshJob?.cancel()
-        autoRefreshJob = null
-    }
-
     fun refreshCheckins() {
         viewModelScope.launch {
             val session = sessionManager.getSession()
-            android.util.Log.d("CheckinVM", "refreshCheckins: session=${session != null}, spaceId=${session?.spaceId}")
-            if (session == null || session.spaceId.isEmpty()) return@launch
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            if (session == null || session.spaceId.isEmpty()) {
+                Log.w(TAG, "refreshCheckins: no session or empty spaceId")
+                return@launch
+            }
+            Log.d(TAG, "refreshCheckins: fetching from PocketBase spaceId=${session.spaceId}")
             val result = checkinRepository.refreshCheckins(session.spaceId)
-            android.util.Log.d("CheckinVM", "refreshCheckins result: success=${result.isSuccess}, error=${result.exceptionOrNull()?.message}")
-            result.onSuccess {
-                _uiState.value = _uiState.value.copy(isLoading = false)
+            result.onSuccess { list ->
+                Log.d(TAG, "refreshCheckins: success, ${list.size} items from server")
             }.onFailure { e ->
-                android.util.Log.e("CheckinVM", "refreshCheckins FAILED", e)
-                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+                Log.e(TAG, "refreshCheckins: FAILED", e)
             }
         }
     }

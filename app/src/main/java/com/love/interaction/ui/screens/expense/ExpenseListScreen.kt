@@ -26,9 +26,6 @@ fun ExpenseListScreen(onAddClick: () -> Unit, onBack: () -> Unit, viewModel: Exp
     val uiState by viewModel.uiState.collectAsState()
     var deleteTarget by remember { mutableStateOf<CachedExpense?>(null) }
 
-    LaunchedEffect(Unit) { viewModel.startAutoRefresh() }
-    DisposableEffect(Unit) { onDispose { viewModel.stopAutoRefresh() } }
-
     val categoryLabels = mapOf(
         "food" to "\u9910\u996E", "shopping" to "\u8D2D\u7269", "travel" to "\u65C5\u884C",
         "housing" to "\u623F\u79DF\u6C34\u7535", "entertainment" to "\u5A31\u4E50", "income" to "\u6536\u5165", "other" to "\u5176\u4ED6"

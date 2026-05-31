@@ -1,14 +1,13 @@
 package com.love.interaction.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.love.interaction.data.local.AppDatabase
 import com.love.interaction.data.local.CachedInteraction
-import com.love.interaction.data.remote.RealtimeManager
 import com.love.interaction.data.repository.InteractionRepository
 import com.love.interaction.data.repository.SessionManager
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +27,7 @@ data class InteractionUiState(
 )
 
 class InteractionViewModel(application: Application) : AndroidViewModel(application) {
+    companion object { private const val TAG = "InteractionVM" }
     private val db = AppDatabase.getInstance(application)
     private val sessionManager = SessionManager(db.sessionDao())
     val currentUserId: String = kotlinx.coroutines.runBlocking { sessionManager.getSession()?.userId ?: "" }
@@ -38,42 +38,28 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
     private val _uiState = MutableStateFlow(InteractionUiState())
     val uiState: StateFlow<InteractionUiState> = _uiState.asStateFlow()
 
-    private var autoRefreshJob: Job? = null
-
     init {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
             interactionRepository.getInteractions(session.spaceId).collect { cached ->
-                val hugs = cached.count { it.type == "hug" }
-                val kisses = cached.count { it.type == "kiss" }
-                _uiState.value = _uiState.value.copy(interactions = cached, hugCount = hugs, kissCount = kisses)
+                _uiState.value = _uiState.value.copy(
+                    interactions = cached,
+                    hugCount = cached.count { it.type == "hug" },
+                    kissCount = cached.count { it.type == "kiss" }
+                )
             }
         }
         refresh()
-    }
-
-    fun startAutoRefresh() {
-        if (autoRefreshJob != null) return
-        autoRefreshJob = viewModelScope.launch {
-            while (isActive) {
-                delay(5000)
-                refresh()
-            }
+        viewModelScope.launch {
+            while (isActive) { delay(5000); refresh() }
         }
-    }
-
-    fun stopAutoRefresh() {
-        autoRefreshJob?.cancel()
-        autoRefreshJob = null
     }
 
     fun refresh() {
         viewModelScope.launch {
             val session = sessionManager.getSession() ?: return@launch
             if (session.spaceId.isEmpty() || session.spaceId == "couple_main") return@launch
-            _uiState.value = _uiState.value.copy(isLoading = true)
             interactionRepository.refreshInteractions(session.spaceId)
-            _uiState.value = _uiState.value.copy(isLoading = false)
         }
     }
 
@@ -89,16 +75,10 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
                 return@launch
             }
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = interactionRepository.sendInteraction(
-                spaceId = session.spaceId, fromUserId = session.userId,
-                toUserId = session.partnerId, type = type
-            )
+            val result = interactionRepository.sendInteraction(session.spaceId, session.userId, session.partnerId, type)
             result.onSuccess {
                 val label = when (type) { "hug" -> "\u62B1\u62B1"; "kiss" -> "\u4EB2\u4EB2"; "miss" -> "\u60F3\u4F60"; else -> type }
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false, showAnimation = true, animationType = type,
-                    successMessage = "\u5DF2\u53D1\u9001$label\uFF01"
-                )
+                _uiState.value = _uiState.value.copy(isLoading = false, showAnimation = true, animationType = type, successMessage = "\u5DF2\u53D1\u9001$label\uFF01")
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
