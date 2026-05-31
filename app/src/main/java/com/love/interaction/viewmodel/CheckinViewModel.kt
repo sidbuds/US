@@ -57,9 +57,11 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
     /** Start periodic polling. Call from LaunchedEffect when screen is visible. */
     fun startAutoRefresh() {
         if (autoRefreshJob != null) return
+        android.util.Log.d("CheckinVM", "startAutoRefresh called")
         autoRefreshJob = viewModelScope.launch {
             while (isActive) {
                 delay(5000)
+                android.util.Log.d("CheckinVM", "POLL TICK - refreshing")
                 refreshCheckins()
             }
         }
@@ -72,13 +74,16 @@ class CheckinViewModel(application: Application) : AndroidViewModel(application)
 
     fun refreshCheckins() {
         viewModelScope.launch {
-            val session = sessionManager.getSession() ?: return@launch
-            if (session.spaceId.isEmpty()) return@launch
+            val session = sessionManager.getSession()
+            android.util.Log.d("CheckinVM", "refreshCheckins: session=${session != null}, spaceId=${session?.spaceId}")
+            if (session == null || session.spaceId.isEmpty()) return@launch
             _uiState.value = _uiState.value.copy(isLoading = true)
             val result = checkinRepository.refreshCheckins(session.spaceId)
+            android.util.Log.d("CheckinVM", "refreshCheckins result: success=${result.isSuccess}, error=${result.exceptionOrNull()?.message}")
             result.onSuccess {
                 _uiState.value = _uiState.value.copy(isLoading = false)
             }.onFailure { e ->
+                android.util.Log.e("CheckinVM", "refreshCheckins FAILED", e)
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }

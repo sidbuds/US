@@ -27,7 +27,7 @@ fun CheckinScreen(viewModel: CheckinViewModel = viewModel()) {
     var customContent by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<CachedCheckin?>(null) }
 
-    LaunchedEffect(Unit) { viewModel.startAutoRefresh() }
+    LaunchedEffect(Unit) { android.util.Log.d("CheckinScreen", "LaunchedEffect: calling startAutoRefresh"); viewModel.startAutoRefresh() }
     DisposableEffect(Unit) { onDispose { viewModel.stopAutoRefresh() } }
 
     Scaffold(topBar = {
