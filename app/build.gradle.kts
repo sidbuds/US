@@ -19,7 +19,7 @@ android {
         vectorDrawables { useSupportLibrary = true }
 
         // PocketBase server URL - change this to your actual server address
-        buildConfigField("String", "POCKETBASE_URL", "\"https://ingenious-wonder-production-b11b.up.railway.app/\"")
+        buildConfigField("String", "POCKETBASE_URL", "\"http://127.0.0.1:8090/\"")
     }
 
     buildTypes {
